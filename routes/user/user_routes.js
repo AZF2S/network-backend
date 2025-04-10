@@ -3,6 +3,7 @@ const { nodeBB} = require("../../third_party/nodebb");
 const mongodb = require('../../third_party/mongodb');
 const { validateSession }  = require('../../middleware/validateSession');
 const validation = require('./user_validation');
+const {data} = require("express-session/session/cookie");
 const router = express.Router();
 
 router.post('/is-available', (async (req, res) => {
@@ -37,6 +38,52 @@ router.post('/is-available', (async (req, res) => {
         return res.status(500).json({});
     }
 }));
+
+router.post('/sign-up', async (req, res) => {
+    const { isValid, errors } = validation.validateSignUp(req.body);
+    if (!isValid) {
+        return res.status(400).json({
+            success: false,
+            errors: errors
+        });
+    }
+
+    try {
+        // 1. Get initial session and CSRF token
+        const configResponse = await api.get(`${getUrl()}/api/config`);
+
+        const csrfToken = configResponse.data?.csrf_token;
+        if (!csrfToken) {
+            throw new Error('Could not retrieve CSRF token');
+        }
+
+        // Extract session cookie
+        const cookies = configResponse.headers['set-cookie'];
+        if (!cookies?.length) {
+            throw new Error('No session cookie received');
+        }
+
+        const sessionCookie = cookies.find(cookie => cookie.includes('express.sid'));
+        if (!sessionCookie) {
+            throw new Error('Session cookie not found');
+        }
+
+        // 2. Sign up
+        const response = await nodeBB.api.post('/api/v3/users',
+            req.body,
+            {
+            headers: {
+                'Cookie': sessionCookie,
+                'x-csrf-token': csrfToken
+            }
+        });
+
+        return res.status(response.status).json(response.data);
+
+    } catch (error) {
+
+    }
+})
 
 router.get("/", validateSession, (async (req, res) => {
     try {

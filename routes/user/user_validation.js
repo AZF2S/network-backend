@@ -12,6 +12,24 @@ const validateLogin = (body) => {
     return getValidationResult(errors);
 };
 
+const validateSignUp = (body) => {
+    const errors = {};
+
+    if(!body.username || typeof body.username !== 'string' || body.username.trim() === '') {
+        errors.username = 'Username is required';
+    }
+
+    if (!body.password || typeof body.password !== 'string') {
+        errors.password = 'Password is required';
+    }
+
+    if (!body.email || typeof body.email !== 'string') {
+        errors.email = 'Email is required';
+    }
+
+    return getValidationResult(errors);
+}
+
 const validateIsAvailable = (body) => {
     const errors = {};
 
@@ -35,5 +53,6 @@ const getValidationResult = (errors) => {
 
 module.exports = {
     validateLogin,
-    validateIsAvailable
+    validateIsAvailable,
+    validateSignUp
 };
