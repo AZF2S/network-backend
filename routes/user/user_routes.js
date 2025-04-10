@@ -50,7 +50,7 @@ router.post('/sign-up', async (req, res) => {
 
     try {
         // 1. Get initial session and CSRF token
-        const configResponse = await api.get(`${getUrl()}/api/config`);
+        const configResponse = await nodeBB.api.get(`${getUrl()}/api/config`);
 
         const csrfToken = configResponse.data?.csrf_token;
         if (!csrfToken) {
