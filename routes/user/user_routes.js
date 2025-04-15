@@ -174,18 +174,14 @@ router.post("/login", (async (req, res) => {
             validEmail: userData["email:confirmed"] === 1,
         };
 
-        // Update session
+        /* Update session
         req.session.user = user;
-        req.session.csrfToken = nodeBBSession.csrfToken;
+        req.session.csrfToken = nodeBBSession.csrfToken; */
 
         // Respond with user data to client
         return res.json({
             success: true,
-            user: {
-                uid: user.uid,
-                username: user.username,
-                validEmail: user.validEmail,
-            }
+            user: user
         });
     } catch (error) {
         console.error("Authentication error:", error);
