@@ -52,6 +52,22 @@ router.post('/sign-up', (async (req, res) => {
         const _uid = 1; // to use NodeBB master bearer token
         const { username, password, email } = req.body;
 
+        let usernameAvailable = false, emailAvailable = false;
+
+        const collection = await mongodb.getCollection(process.env.MONGO_NODEBB_COLLECTION);
+
+        const existingUsername = await collection.findOne({ username: username });
+        if (existingUsername === null || existingUsername === undefined) { usernameAvailable = true; }
+        console.log(`Found username: ${existingUsername}`);
+
+        const existingEmail = await collection.findOne({ email: email });
+        if (existingEmail === null || existingEmail === undefined) { emailAvailable = true; }
+        console.log(`Found email: ${existingEmail}`);
+
+        if (!usernameAvailable || !emailAvailable) {
+            return res.status(400).json({"status": "error", "errors": "User already exists"});
+        }
+
         const response = await nodeBB.api.post(
         '/api/v3/users',
         { _uid, username, password, email },
