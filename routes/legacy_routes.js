@@ -595,29 +595,24 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
         );
 
         const groupAddPromises = groupSlugs.map((groupSlug) => {
-            return fetch(
-                `${getNodeBBServiceUrl()}/api/v3/groups/${groupSlug}/membership/${userId}`,
+            return nodeBB.api.put(
+                `/api/v3/groups/${groupSlug}/membership/${userId}`,
+                {},
                 {
-                    method: "PUT",
                     headers: {
                         Accept: "application/json",
                         "Content-Type": "application/json",
                         "X-CSRF-Token": csrfToken,
                         Cookie: req.headers.cookie,
                     },
-                    credentials: "include",
+                    withCredentials: true,
                 }
-            )
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(
-                            `Error adding user to group ${groupSlug}: ${response.statusText}`
-                        );
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+            ).catch((error) => {
+                console.log(error);
+                throw new Error(
+                    `Error adding user to group ${groupSlug}: ${error.message}`
+                );
+            });
         });
 
         await mongoClient.connect();
@@ -673,23 +668,20 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
         );
 
         const groupAddPromises = groupSlugs.map((groupSlug) => {
-            return fetch(
-                `${getNodeBBServiceUrl()}/api/v3/groups/${groupSlug}/membership/${userId}`,
+            return nodeBB.api.delete(
+                `/api/v3/groups/${groupSlug}/membership/${userId}`,
                 {
-                    method: "DELETE",
                     headers: {
                         Accept: "application/json",
                         "Content-Type": "application/json",
                         "x-csrf-token": csrfToken,
                         Cookie: req.headers.cookie,
-                    },
+                    }
                 }
-            ).then((response) => {
-                if (!response.ok) {
-                    throw new Error(
-                        `Error removing user to group ${groupSlug}: ${response.statusText}`
-                    );
-                }
+            ).catch((error) => {
+                throw new Error(
+                    `Error removing user to group ${groupSlug}: ${error.message}`
+                );
             });
         });
 
