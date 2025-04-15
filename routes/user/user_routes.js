@@ -115,6 +115,30 @@ router.get("/", validateSession, (async (req, res) => {
     }
 }));
 
+router.get("/notifications", validateSession, (async (req, res) => {
+    try {
+        const response = await nodeBB.api.get(
+            `/api/notifications`,
+            {
+                headers: {
+                    'Cookie': req.session.cookie,
+                    'x-csrf-token': req.session.csrfToken,
+                }
+            }
+        );
+
+        let chatNotificationCount = response.data.notifications?.filter(
+            (notification) =>
+                notification.type === "new-chat" && notification.read === false
+        ).length;
+
+        res.json({ chat_notifications_count: chatNotificationCount });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error retrieving notifications" });
+    }
+}));
+
 router.post("/login", (async (req, res) => {
     // Validate request
     const { isValid, errors } = validation.validateLogin(req.body);
