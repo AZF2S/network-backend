@@ -76,7 +76,7 @@ async function startServer() {
         session({
           store: sessionStore,
           secret: process.env.SESSION_COOKIE_SECRET,
-          key: 'server.sid', // Match NodeBB's cookie name
+          key: 'nodebb.sid', // Match NodeBB's cookie name
           resave: false,
           saveUninitialized: false, // Prevent Express from creating empty session
           unset: 'destroy'
