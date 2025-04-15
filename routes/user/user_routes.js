@@ -40,17 +40,17 @@ router.post('/is-available', (async (req, res) => {
 }));
 
 router.post('/sign-up', async (req, res) => {
-    const { isValid, errors } = validation.validateSignUp(req.body);
-    if (!isValid) {
-        return res.status(400).json({
-            success: false,
-            errors: errors
-        });
-    }
-
     try {
+        const { isValid, errors } = validation.validateSignUp(req.body);
+        if (!isValid) {
+            return res.status(400).json({
+                success: false,
+                errors: errors
+            });
+        }
+
         // 1. Get initial session and CSRF token
-        const configResponse = await nodeBB.api.get(`${getUrl()}/api/config`);
+        const configResponse = await nodeBB.api.get(`/api/config`);
 
         const csrfToken = configResponse.data?.csrf_token;
         if (!csrfToken) {
@@ -69,7 +69,8 @@ router.post('/sign-up', async (req, res) => {
         }
 
         // 2. Sign up
-        const response = await nodeBB.api.post('/api/v3/users',
+        const response = await nodeBB.api.post(
+            '/api/v3/users',
             req.body,
             {
             headers: {
@@ -81,7 +82,7 @@ router.post('/sign-up', async (req, res) => {
         return res.status(response.status).json(response.data);
 
     } catch (error) {
-
+        console.error("Signup error:", error);
     }
 })
 
