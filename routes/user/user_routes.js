@@ -130,7 +130,7 @@ router.post("/login", (async (req, res) => {
 
         // Set the NodeBB session cookie in the response
         if (nodeBBSession.sessionCookie) {
-            res.cookie('nodebb.sid', nodeBBSession.sessionCookie);
+            res.setHeader('Set-Cookie', nodeBBSession.sessionCookie.split('; '));
         }
 
         // Format response
