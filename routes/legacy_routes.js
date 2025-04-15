@@ -4,7 +4,7 @@ const axios = require("axios");
 const { validateSession, validateAdminSession } = require('../middleware/validateSession');
 const dayjs = require("dayjs");
 const {ObjectId} = require("mongodb");
-const {getNodeBBServiceUrl} = require("../third_party/nodebb");
+const { nodeBB} = require("../third_party/nodebb");
 
 const mongoEnv = process.env.MONGO_NODEBB_DATABASE || 'nodebb';
 
@@ -193,8 +193,8 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
 
         console.log(req.body);
         try {
-            await axios.put(
-                `${getNodeBBServiceUrl()}/api/v3/users/` + userId + "/settings",
+            await nodeBB.api.put(
+                `/api/v3/users/${userId}/settings`,
                 {
                     settings: {
                         showemail: req.body.showemail.toString(),
@@ -203,7 +203,7 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
                 },
                 {
                     headers: {
-                        Authorization: "Bearer " + process.env.NODEBB_BEARER,
+                        Authorization: "Bearer " + process.env.NODEBB_BEARER_TOKEN,
                     },
                 }
             );
@@ -214,8 +214,8 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
 
     app.get("/notifications", validateSession, async (req, res) => {
         try {
-            const response = await axios.get(
-                `${getNodeBBServiceUrl()}/api/notifications`,
+            const response = await nodeBB.api.get(
+                `/api/notifications`,
                 {
                     headers: {
                         Cookie: req.headers.cookie,
@@ -578,8 +578,8 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
     async function addUserToGroups(req, userId, groups) {
         const userKey = `user:${userId}`;
 
-        const configResponse = await axios.get(
-            `${getNodeBBServiceUrl()}/api/config`,
+        const configResponse = await nodeBB.api.get(
+            `/api/config`,
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -656,8 +656,8 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
     async function removeUserFromGroups(req, userId, groups) {
         const userKey = `user:${userId}`;
 
-        const configResponse = await axios.get(
-            `${getNodeBBServiceUrl()}/api/config`,
+        const configResponse = await nodeBB.api.get(
+            `/api/config`,
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -1196,8 +1196,8 @@ function setupLegacyRoutes(app, { jwtClient, spreadsheetId, range, mongoClient }
 
     app.get("/group-colors", async (req, res) => {
         try {
-            const response = await axios.get(
-                `${getNodeBBServiceUrl()}/api/groups`,
+            const response = await nodeBB.api.get(
+                `/api/groups`,
                 {
                     withCredentials: false,
                 }
