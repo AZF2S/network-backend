@@ -39,7 +39,7 @@ router.post('/is-available', (async (req, res) => {
     }
 }));
 
-router.post('/sign-up', async (req, res) => {
+router.post('/sign-up', (async (req, res) => {
     try {
         const { isValid, errors } = validation.validateSignUp(req.body);
         if (!isValid) {
@@ -84,7 +84,7 @@ router.post('/sign-up', async (req, res) => {
     } catch (error) {
         console.error("Signup error:", error);
     }
-})
+}));
 
 router.get("/", validateSession, (async (req, res) => {
     try {
