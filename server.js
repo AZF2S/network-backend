@@ -57,6 +57,7 @@ async function startServer() {
     await mongoClient.connect();
     console.log('MongoDB connected successfully');
 
+    /*
     // Configure session store with the connected client
     const sessionStore = MongoStore.create({
       client: mongoClient.client,
@@ -76,12 +77,14 @@ async function startServer() {
         session({
           store: sessionStore,
           secret: process.env.SESSION_COOKIE_SECRET,
-          key: 'nodebb.sid', // Match NodeBB's cookie name
+          key: 'nodebb.sid', // Match NodeBB's cookie name (this doesn't work. it overwrites the nodebb cookie entirely)
           resave: false,
           saveUninitialized: false, // Prevent Express from creating empty session
           unset: 'destroy'
         })
     );
+    */
+
 
     // Setup email transporter
     app.locals.transporter = nodemailer.createTransport({
