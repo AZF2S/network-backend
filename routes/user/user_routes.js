@@ -52,7 +52,7 @@ router.post('/sign-up', (async (req, res) => {
 
 router.get("/", validateSession, (async (req, res) => {
     try {
-        const response = await nodeBB.api.get(`/api/user/uid/${req.uid}`,
+        const response = await nodeBB.api.get(`/api/user/uid/${req.params.uid}`,
             {
                 headers: req.headers
             }
