@@ -128,10 +128,9 @@ router.post("/login", (async (req, res) => {
             });
         }
 
-        // Set the NodeBB session cookie in the response
-        if (nodeBBSession.sessionCookie) {
-            res.setHeader('Set-Cookie', nodeBBSession.sessionCookie);
-        }
+        // Set the session cookie and csrf in response
+        res.setHeader('Set-Cookie', nodeBBSession.sessionCookie);
+        res.setHeader('X-CSRF-Token', nodeBBSession.csrfToken);
 
         // Format response
         const userData = nodeBBSession.userData;
