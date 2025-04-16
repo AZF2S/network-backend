@@ -37,24 +37,25 @@ const nodeBB = (() => {
                     throw new Error('Could not retrieve CSRF token');
                 }
 
-                const cookies = configResponse.headers['set-cookie'];
-                if (!cookies?.length) {
+                const configCookies = configResponse.headers['set-cookie'];
+                if (!configCookies?.length) {
                     throw new Error('No session cookie received');
                 }
 
-                const sessionCookie = cookies.find(cookie => cookie.includes('express.sid'));
-                if (!sessionCookie) {
+                const configSessionCookie = configCookies.find(cookie => cookie.includes('express.sid'));
+                if (!configSessionCookie) {
                     throw new Error('Session cookie not found');
                 }
 
-                console.log(`Login ; ${sessionCookie} ; ${csrfToken}`);
-                // 2. Login with session cookie and CSRF token
+                console.log(`Login ; ${configSessionCookie} ; ${csrfToken}`);
+
+                // 2. Login with initial session cookie and CSRF token
                 const loginResponse = await api.post(
                     `${getUrl()}/api/v3/utilities/login`,
                     { username, password },
                     {
                         headers: {
-                            'Cookie': sessionCookie,
+                            'Cookie': configSessionCookie,
                             'X-CSRF-Token': csrfToken
                         }
                     }
@@ -64,13 +65,23 @@ const nodeBB = (() => {
                     throw new Error('NodeBB authentication failed');
                 }
 
-                // csrf and session cookie exist and the session has been validated (logged in!)
+                // Get the NEW session cookie from login response
+                const loginCookies = loginResponse.headers['set-cookie'];
+                if (!loginCookies?.length) {
+                    throw new Error('No login session cookie received');
+                }
 
+                const loginSessionCookie = loginCookies.find(cookie => cookie.includes('express.sid'));
+                if (!loginSessionCookie) {
+                    throw new Error('Login session cookie not found');
+                }
+
+                // Return the NEW session cookie, not the initial one
                 const response = {
                     success: true,
                     userData: loginResponse.data.response,
                     csrfToken: csrfToken,
-                    sessionCookie: sessionCookie
+                    sessionCookie: loginSessionCookie,  // This is the authenticated session cookie
                 };
 
                 console.log(response);
