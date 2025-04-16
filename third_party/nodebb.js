@@ -47,6 +47,7 @@ const nodeBB = (() => {
                     throw new Error('Session cookie not found');
                 }
 
+                console.log(`Login ; ${sessionCookie} ; ${csrfToken}`);
                 // 2. Login with session cookie and CSRF token
                 const loginResponse = await api.post(
                     `${getUrl()}/api/v3/utilities/login`,

@@ -15,9 +15,6 @@ app.use(
     })
 );
 
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-
 const mongoClient = require('./third_party/mongodb');
 const { nodeBB } = require('./third_party/nodebb');
 
@@ -56,35 +53,6 @@ async function startServer() {
     // Connect to MongoDB once
     await mongoClient.connect();
     console.log('MongoDB connected successfully');
-
-    /*
-    // Configure session store with the connected client
-    const sessionStore = MongoStore.create({
-      client: mongoClient.client,
-      dbName: process.env.MONGO_NODEBB_DATABASE || 'nodebb',
-      collectionName: "sessions",
-      stringify: false,
-      autoRemove: 'native', // Use MongoDB's TTL index
-      ttl: 24 * 60 * 60, // 1 day in seconds
-      touchAfter: 10 * 60, // Only update session if 10 minutes passed
-      crypto: {
-        secret: process.env.SESSION_COOKIE_SECRET // Encrypt session data
-      }
-    });
-
-    // Configure session
-    app.use(
-        session({
-          store: sessionStore,
-          secret: process.env.SESSION_COOKIE_SECRET,
-          key: 'nodebb.sid', // Match NodeBB's cookie name (this doesn't work. it overwrites the nodebb cookie entirely)
-          resave: false,
-          saveUninitialized: false, // Prevent Express from creating empty session
-          unset: 'destroy'
-        })
-    );
-    */
-
 
     // Setup email transporter
     app.locals.transporter = nodemailer.createTransport({

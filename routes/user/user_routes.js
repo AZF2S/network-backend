@@ -81,6 +81,7 @@ router.get("/", validateSession, (async (req, res) => {
 
 router.get("/notifications", validateSession, (async (req, res) => {
     try {
+        console.log(`Notifications ; ${req.nodeBBHeaders}`);
         const response = await nodeBB.api.get(
             `/api/notifications`,
             {
