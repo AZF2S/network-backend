@@ -128,9 +128,16 @@ router.post("/login", (async (req, res) => {
             });
         }
 
-        // Set the session cookie and csrf in response
+        // Set the session cookie
         res.setHeader('Set-Cookie', nodeBBSession.sessionCookie);
-        res.setHeader('X-CSRF-Token', nodeBBSession.csrfToken);
+
+        // Set the CSRF token as a cookie instead of a header
+        res.cookie('XSRF-TOKEN', nodeBBSession.csrfToken, {
+            path: '/',
+            httpOnly: false, // Must be accessible to frontend JavaScript
+            secure: process.env.NODE_ENV === 'production', // Secure in production
+            sameSite: 'Strict' // Helps prevent CSRF
+        });
 
         // Format response
         const userData = nodeBBSession.userData;
