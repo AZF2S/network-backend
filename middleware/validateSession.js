@@ -46,7 +46,7 @@ const validateSession = async (req, res, next) => {
     }
 
     req.nodeBBHeaders = {
-        'Cookie': `express.sid=${sessionCookieValue}`,
+        'Cookie': req.headers.cookie,
         'X-CSRF-Token': csrfTokenValue
     };
 
