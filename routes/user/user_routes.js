@@ -54,7 +54,7 @@ router.get("/", validateSession, (async (req, res) => {
     try {
         const response = await nodeBB.api.get(`/api/user/uid/${req.uid}`,
             {
-                headers: req.nodeBBHeaders
+                headers: req.headers
             }
         );
 
@@ -81,11 +81,11 @@ router.get("/", validateSession, (async (req, res) => {
 
 router.get("/notifications", validateSession, (async (req, res) => {
     try {
-        console.log(`Notifications ; ${JSON.stringify(req.nodeBBHeaders)}`);
+        console.log(`Notifications ; ${JSON.stringify(req.headers)}`);
         const response = await nodeBB.api.get(
             `/api/notifications`,
             {
-                headers: req.nodeBBHeaders
+                headers: req.headers
             }
         );
 
