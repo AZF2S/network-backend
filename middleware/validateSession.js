@@ -8,6 +8,7 @@ const validateSession = async (req, res, next) => {
     // Parse cookies from header
     let sessionCookieValue;
     let csrfTokenValue;
+    let uidValue;
 
     if (req.headers.cookie) {
         const cookieString = req.headers.cookie;
@@ -20,6 +21,7 @@ const validateSession = async (req, res, next) => {
 
         sessionCookieValue = cookies['express.sid'];
         csrfTokenValue = cookies['XSRF-TOKEN'];
+        uidValue = cookies['User-Id'];
     }
 
     if (!sessionCookieValue) {
@@ -36,10 +38,19 @@ const validateSession = async (req, res, next) => {
         });
     }
 
+    if (!uidValue) {
+        return res.status(401).json({
+            success: false,
+            message: "Could not identify session."
+        })
+    }
+
     req.nodeBBHeaders = {
         'Cookie': `express.sid=${sessionCookieValue}`,
         'X-CSRF-Token': csrfTokenValue
     };
+
+    req.uid = uidValue;
 
     next();
 };

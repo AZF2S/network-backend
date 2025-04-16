@@ -52,7 +52,7 @@ router.post('/sign-up', (async (req, res) => {
 
 router.get("/", validateSession, (async (req, res) => {
     try {
-        const response = await nodeBB.api.get(`/api/user/username/${req.session.user.username}`,
+        const response = await nodeBB.api.get(`/api/user/uid/${req.uid}`,
             {
                 headers: req.nodeBBHeaders
             }
@@ -133,12 +133,18 @@ router.post("/login", (async (req, res) => {
             sameSite: 'Strict' // Helps prevent CSRF
         });
 
+        res.cookie('User-Id', nodeBBSession.userData.uid, {
+            path: '/',
+            httpOnly: false, // Must be accessible to frontend JavaScript
+            secure: process.env.NODE_ENV === 'production', // Secure in production
+            sameSite: 'Strict' // Helps prevent CSRF
+        });
+
         // Format response
-        const userData = nodeBBSession.userData;
         const user = {
-            uid: userData.uid,
-            username: userData.username,
-            validEmail: userData["email:confirmed"] === 1,
+            uid: nodeBBSession.userData.uid,
+            username: nodeBBSession.userData.username,
+            validEmail: nodeBBSession.userData["email:confirmed"] === 1,
         };
 
         // Respond with user data to client
