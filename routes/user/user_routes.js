@@ -102,17 +102,7 @@ router.get("/notifications", validateSession, (async (req, res) => {
 }));
 
 router.post("/login", (async (req, res) => {
-    // Validate request
-    const { isValid, errors } = validation.validateLogin(req.body);
-    if (!isValid) {
-        return res.status(400).json({
-            success: false,
-            errors: errors
-        });
-    }
-
     try {
-        // Get session cookie, csrf token, and validate session
         const { username, password } = req.body;
         const nodeBBSession = await nodeBB.initializeNodeBBSession(username, password);
 
@@ -123,38 +113,24 @@ router.post("/login", (async (req, res) => {
             });
         }
 
-        // Set the session cookie
+        // Only set the session cookie, exactly as received
         res.setHeader('Set-Cookie', nodeBBSession.sessionCookie);
 
-        // Set the CSRF token as a cookie instead of a header
-        res.cookie('XSRF-TOKEN', nodeBBSession.csrfToken, {
-            path: '/',
-            httpOnly: false, // Must be accessible to frontend JavaScript
-            secure: process.env.NODE_ENV === 'production', // Secure in production
-            sameSite: 'Strict' // Helps prevent CSRF
-        });
-
-        res.cookie('User-Id', nodeBBSession.userData.uid, {
-            path: '/',
-            httpOnly: false, // Must be accessible to frontend JavaScript
-            secure: process.env.NODE_ENV === 'production', // Secure in production
-            sameSite: 'Strict' // Helps prevent CSRF
-        });
-
-        // Format response
+        // Send CSRF token in response body instead of as a cookie
         const user = {
             uid: nodeBBSession.userData.uid,
             username: nodeBBSession.userData.username,
             validEmail: nodeBBSession.userData["email:confirmed"] === 1,
+            csrfToken: nodeBBSession.csrfToken  // Frontend will store this and send as header
         };
 
-        // Respond with user data to client
         return res.json({
             success: true,
             user: user
         });
     } catch (error) {
         console.error("Authentication error:", error);
+        res.status(500).json({ success: false, message: "Authentication failed" });
     }
 }));
 
