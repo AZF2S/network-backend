@@ -37,7 +37,6 @@ const nodeBB = (() => {
                     throw new Error('Could not retrieve CSRF token');
                 }
 
-                // Extract session cookie
                 const cookies = configResponse.headers['set-cookie'];
                 if (!cookies?.length) {
                     throw new Error('No session cookie received');
@@ -64,15 +63,17 @@ const nodeBB = (() => {
                     throw new Error('NodeBB authentication failed');
                 }
 
-                // Get cookies after authentication (use new ones if available)
-                const authCookies = loginResponse.headers['set-cookie'] || [sessionCookie];
+                // csrf and session cookie exist and the session has been validated (logged in!)
 
-                return {
+                const response = {
                     success: true,
                     userData: loginResponse.data.response,
                     csrfToken: csrfToken,
-                    sessionCookie: authCookies.join('; ')
+                    sessionCookie: sessionCookie
                 };
+
+                console.log(response);
+                return response;
             } catch (error) {
                 console.error('NodeBB authentication failed:', error);
                 throw error;

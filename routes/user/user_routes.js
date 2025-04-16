@@ -117,7 +117,7 @@ router.post("/login", (async (req, res) => {
     }
 
     try {
-        // Directly authenticate with NodeBB
+        // Get session cookie, csrf token, and validate session
         const { username, password } = req.body;
         const nodeBBSession = await nodeBB.initializeNodeBBSession(username, password);
 
@@ -130,7 +130,7 @@ router.post("/login", (async (req, res) => {
 
         // Set the NodeBB session cookie in the response
         if (nodeBBSession.sessionCookie) {
-            res.setHeader('Set-Cookie', nodeBBSession.sessionCookie.split('; '));
+            res.setHeader('Set-Cookie', nodeBBSession.sessionCookie);
         }
 
         // Format response
@@ -140,10 +140,6 @@ router.post("/login", (async (req, res) => {
             username: userData.username,
             validEmail: userData["email:confirmed"] === 1,
         };
-
-        /* Update session
-        req.session.user = user;
-        req.session.csrfToken = nodeBBSession.csrfToken; */
 
         // Respond with user data to client
         return res.json({
