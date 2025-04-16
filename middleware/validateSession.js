@@ -5,17 +5,31 @@ const { nodeBB } = require('../third_party/nodebb');
  * Ensures user session and CSRF token are present
  */
 const validateSession = async (req, res, next) => {
-    const sessionCookie = req.cookies['express.sid'];
-    if (!sessionCookie) {
+    // Parse cookies from header
+    let sessionCookieValue;
+    let csrfTokenValue;
+
+    if (req.headers.cookie) {
+        const cookieString = req.headers.cookie;
+        const cookies = cookieString.split(';').reduce((cookiesObj, cookie) => {
+            const parts = cookie.trim().split('=');
+            const name = parts[0];
+            cookiesObj[name] = parts.slice(1).join('=');
+            return cookiesObj;
+        }, {});
+
+        sessionCookieValue = cookies['express.sid'];
+        csrfTokenValue = cookies['XSRF-TOKEN'];
+    }
+
+    if (!sessionCookieValue) {
         return res.status(401).json({
             success: false,
             message: "No session found."
         });
     }
 
-    // Check for CSRF token in cookies
-    const csrfToken = req.cookies['XSRF-TOKEN'];
-    if (!csrfToken) {
+    if (!csrfTokenValue) {
         return res.status(401).json({
             success: false,
             message: "Could not authenticate session."
@@ -23,8 +37,8 @@ const validateSession = async (req, res, next) => {
     }
 
     req.nodeBBHeaders = {
-        'Cookie': `express.sid=${sessionCookie}`,
-        'X-CSRF-Token': csrfToken
+        'Cookie': `express.sid=${sessionCookieValue}`,
+        'X-CSRF-Token': csrfTokenValue
     };
 
     next();
