@@ -54,10 +54,7 @@ router.get("/", validateSession, (async (req, res) => {
     try {
         const response = await nodeBB.api.get(`/api/user/username/${req.session.user.username}`,
             {
-                headers: {
-                    'Cookie': req.session.cookie,
-                    'x-csrf-token': req.session.csrfToken,
-                }
+                headers: req.nodeBBHeaders
             }
         );
 
@@ -87,10 +84,7 @@ router.get("/notifications", validateSession, (async (req, res) => {
         const response = await nodeBB.api.get(
             `/api/notifications`,
             {
-                headers: {
-                    'Cookie': req.session.cookie,
-                    'x-csrf-token': req.session.csrfToken,
-                }
+                headers: req.nodeBBHeaders
             }
         );
 

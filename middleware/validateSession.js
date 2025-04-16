@@ -5,21 +5,27 @@ const { nodeBB } = require('../third_party/nodebb');
  * Ensures user session and CSRF token are present
  */
 const validateSession = async (req, res, next) => {
-    // Check for user session
-    if (!req.session.user) {
+    const sessionCookie = req.cookies['express.sid'];
+    if (!sessionCookie) {
         return res.status(401).json({
             success: false,
             message: "No session found."
         });
     }
 
-    // Check for CSRF token
-    if (!req.session.csrfToken) {
+    // Check for CSRF token in cookies
+    const csrfToken = req.cookies['XSRF-TOKEN'];
+    if (!csrfToken) {
         return res.status(401).json({
             success: false,
             message: "Could not authenticate session."
         });
     }
+
+    req.nodeBBHeaders = {
+        'Cookie': `express.sid=${sessionCookie}`,
+        'X-CSRF-Token': csrfToken
+    };
 
     next();
 };
@@ -28,34 +34,27 @@ const validateSession = async (req, res, next) => {
  * Admin session validation middleware
  * Ensures user is authenticated and has admin privileges
  */
+// todo: fix this. probably need to hit get user for username
 const validateAdminSession = async (req, res, next) => {
-    // First validate basic session requirements
-    if (!req.session.user) {
-        return res.status(401).json({
-            success: false,
-            message: "No session found."
-        });
-    }
-
-    if (!req.session.csrfToken) {
-        return res.status(401).json({
-            success: false,
-            message: "Could not authenticate session."
-        });
-    }
-
     try {
+        // Validate session to get credentials for admin query
+        await new Promise((resolve, reject) => {
+            validateSession(req, res, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Admin query
         const response = await nodeBB.api.get('/api/admin/manage/admins-mods', {
-            headers: {
-                Cookie: req.headers.cookie
-            }
+            headers: req.nodeBBHeaders
         });
 
         const adminData = response.data;
 
-        // Check if user is an admin
+        // Parse admins
         const isAdmin = adminData.admins.members.some(
-            (admin) => admin.username === req.session.user.username
+            (admin) => admin.username === adminData.user.username
         );
 
         if (isAdmin) {
