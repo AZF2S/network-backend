@@ -37,8 +37,7 @@ console.log(`MongoDB URI: ${uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')}`)
 
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-
+    useUnifiedTopology: true
 });
 
 let connected = false;

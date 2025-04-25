@@ -1,10 +1,52 @@
 const express = require('express');
 const { nodeBB} = require("../../third_party/nodebb");
 const mongodb = require('../../third_party/mongodb');
-const { validateSession }  = require('../../middleware/validateSession');
+const { validateSession, validateAdminSession }  = require('../../middleware/validateSession');
 const validation = require('./user_validation');
 require("express-session/session/cookie");
 const router = express.Router();
+
+const getUserHandler = async (req, res) => {
+    try {
+        // Validate user object in NodeBB, the source of truth
+        const response = await nodeBB.api.get(`/api/user/uid/${req.query.uid}`,
+            {
+                headers: req.headers
+            }
+        );
+
+        if (!response.data) {
+            return res.status(404).json({ error: "NodeBB user not found" });
+        }
+
+        // Pull full user object from MongoDB, to acquire custom fields
+        const mongoClient = await mongodb.getCollection(process.env.MONGO_NODEBB_COLLECTION);
+        const user = await mongoClient.findOne({ _key: `user:${req.query.uid}` });
+
+        if(!user || !user.email) {
+            return res.status(500).json({ error: "MongoDB user not found" });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        if (error.response) {
+            console.error("NodeBB API error:", error.response.status, error.response.data);
+
+            if (error.response.status === 404) {
+                return res.status(404).json({ error: "User not found" });
+            }
+        }
+        else {
+            console.error("Error fetching user data:", error);
+        }
+
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+router.get("/", validateSession, getUserHandler);
+
+router.get("/admin", validateSession, validateAdminSession, getUserHandler);
 
 router.post('/sign-up', (async (req, res) => {
     try {
@@ -47,35 +89,6 @@ router.post('/sign-up', (async (req, res) => {
 
     } catch (error) {
         console.error("Signup error:", error);
-    }
-}));
-
-router.get("/", validateSession, (async (req, res) => {
-    try {
-        const response = await nodeBB.api.get(`/api/user/uid/${req.query.uid}`,
-            {
-                headers: req.headers
-            }
-        );
-
-        if (!response.data) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        res.status(200).json(response.data);
-    } catch (error) {
-        if (error.response) {
-            console.error("NodeBB API error:", error.response.status, error.response.data);
-
-            if (error.response.status === 404) {
-                return res.status(404).json({ error: "User not found" });
-            }
-        }
-        else {
-            console.error("Error fetching user data:", error);
-        }
-
-        return res.status(500).json({ error: "Internal Server Error" });
     }
 }));
 
