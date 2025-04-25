@@ -23,9 +23,12 @@ const getUserHandler = async (req, res) => {
         const mongoClient = await mongodb.getCollection(process.env.MONGO_NODEBB_COLLECTION);
         const user = await mongoClient.findOne({ _key: `user:${req.query.uid}` });
 
-        if(!user || !user.email) {
+        if (!user || !user.email) {
             return res.status(500).json({ error: "MongoDB user not found" });
         }
+
+        // Redundant precaution. It's encrypted anyhow.
+        if (user.password) { user.password = null }
 
         res.status(200).json(user);
     } catch (error) {
